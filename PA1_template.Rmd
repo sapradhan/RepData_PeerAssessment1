@@ -7,16 +7,34 @@ output:
 
 
 ## Loading and preprocessing the data
-
-
+```{r Load data, echo=TRUE}
+#unzip("activity.zip")
+activity <- read.csv("activity.csv", stringsAsFactors = FALSE)
+activity$date <- as.Date(activity$date)
+head(activity)
+```
 
 ## What is mean total number of steps taken per day?
+```{r mean steps per day, echo=TRUE}
+library(dplyr)
+stepsperday <- activity %>% group_by(date) %>% summarize(totalsteps=sum(steps,na.rm = TRUE))
+head(stepsperday)
+hist(stepsperday$totalsteps, main = "Histogram of total steps per day", xlab = 'Steps/day')
+```
+
+The mean total steps is `r format(mean(stepsperday$totalsteps), big.mark = ',')` and median total steps is `r format(median(stepsperday$totalsteps), big.mark = ',')`
 
 
 
 ## What is the average daily activity pattern?
+```{r daily activity pattern}
+library(ggplot2)
+stepsperinterval <- activity %>% group_by(interval) %>% summarise(steps = mean(steps, na.rm = TRUE))
+ggplot(stepsperinterval, aes(x= interval, y=steps)) + geom_line() + theme_classic()
+mostActiveInterval = stepsperinterval[which.max(stepsperinterval$steps), ]$interval
+```
 
-
+On average `r paste(mostActiveInterval%/%100, mostActiveInterval%%100, '-', mostActiveInterval%/%100, (mostActiveInterval%%100) +5 )`  has most number of steps during the study period
 
 ## Imputing missing values
 

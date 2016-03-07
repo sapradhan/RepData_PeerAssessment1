@@ -24,30 +24,6 @@ head(activity)
 
 ```r
 library(dplyr)
-```
-
-```
-## Warning: package 'dplyr' was built under R version 3.2.3
-```
-
-```
-## 
-## Attaching package: 'dplyr'
-```
-
-```
-## The following objects are masked from 'package:stats':
-## 
-##     filter, lag
-```
-
-```
-## The following objects are masked from 'package:base':
-## 
-##     intersect, setdiff, setequal, union
-```
-
-```r
 stepsperday <- activity %>% group_by(date) %>% summarize(steps=sum(steps,na.rm = TRUE))
 head(stepsperday)
 ```
@@ -78,18 +54,12 @@ The mean total steps is 9,354.23 and median total steps is 10,395
 
 ```r
 library(ggplot2)
-```
 
-```
-## Warning: package 'ggplot2' was built under R version 3.2.3
-```
-
-```r
 stepsperinterval <- activity %>% group_by(interval) %>% summarise(steps = mean(steps, na.rm = TRUE))
 
 mostActiveInterval = stepsperinterval[which.max(stepsperinterval$steps), ]$interval
 
-ggplot(stepsperinterval, aes(x= interval, y=steps)) + geom_line() + theme_classic()
+ggplot(stepsperinterval, aes(x= interval, y=steps)) + geom_line()
 ```
 
 ![](PA1_template_files/figure-html/daily activity pattern-1.png)
@@ -112,6 +82,20 @@ hist(imputedstepsperday$steps, main = "Histogram of total steps per day after im
 
 ![](PA1_template_files/figure-html/imupting values-1.png)
 
-The mean total steps is 9,530.656 and median total steps is 10,439
+The mean total steps now is 9,530.656 and median total steps is 10,439. The histograms look similar and the means, medians and total steps have slightly increased. 
 
 ## Are there differences in activity patterns between weekdays and weekends?
+
+```r
+imputedactivity <- imputedactivity %>% mutate(day = factor(ifelse(weekdays(date) %in% c('Sunday','Saturday'), 'Weekend', 'Weekday')))
+
+imputedstepsperinterval <- imputedactivity %>% group_by(interval, day) %>% summarise(steps = mean(steps, na.rm = TRUE))
+
+
+ggplot(imputedstepsperinterval, aes(x= interval, y=steps)) + geom_line() +
+  facet_grid(day~.)
+```
+
+![](PA1_template_files/figure-html/weekday weekends-1.png)
+
+We can see during weekdays our subject starts early and rushes to work in the morning and is only modaretely active in the evening threafter whereas in the weekends, sleeps slightly more and is fairly active throughout the day.

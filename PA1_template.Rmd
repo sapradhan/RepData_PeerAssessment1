@@ -7,7 +7,7 @@ output:
 
 
 ## Loading and preprocessing the data
-```{r Load data, echo=TRUE}
+```{r Load data, echo=TRUE, warning=FALSE}
 unzip("activity.zip")
 activity <- read.csv("activity.csv", stringsAsFactors = FALSE)
 activity$date <- as.Date(activity$date)
@@ -15,10 +15,11 @@ head(activity)
 ```
 
 ## What is mean total number of steps taken per day?
-```{r mean steps per day, echo=TRUE}
+```{r mean steps per day, echo=TRUE, warning=FALSE, message=FALSE}
 library(dplyr)
 stepsperday <- activity %>% group_by(date) %>% summarize(steps=sum(steps,na.rm = TRUE))
 head(stepsperday)
+
 hist(stepsperday$steps, main = "Histogram of total steps per day", xlab = 'Steps/day')
 ```
 
@@ -26,14 +27,14 @@ The mean total steps is `r format(mean(stepsperday$steps), big.mark = ',')` and 
 
 
 ## What is the average daily activity pattern?
-```{r daily activity pattern}
+```{r daily activity pattern, warning=FALSE, message=FALSE}
 library(ggplot2)
 
 stepsperinterval <- activity %>% group_by(interval) %>% summarise(steps = mean(steps, na.rm = TRUE))
 
 mostActiveInterval = stepsperinterval[which.max(stepsperinterval$steps), ]$interval
 
-ggplot(stepsperinterval, aes(x= interval, y=steps)) + geom_line() + theme_classic()
+ggplot(stepsperinterval, aes(x= interval, y=steps)) + geom_line()
 
 ```
 
@@ -56,3 +57,15 @@ hist(imputedstepsperday$steps, main = "Histogram of total steps per day after im
 The mean total steps now is `r format(mean(imputedstepsperday$steps), big.mark = ',')` and median total steps is `r format(median(imputedstepsperday$steps), big.mark = ',')`. The histograms look similar and the means, medians and total steps have slightly increased. 
 
 ## Are there differences in activity patterns between weekdays and weekends?
+```{r weekday weekends}
+imputedactivity <- imputedactivity %>% mutate(day = factor(ifelse(weekdays(date) %in% c('Sunday','Saturday'), 'Weekend', 'Weekday')))
+
+imputedstepsperinterval <- imputedactivity %>% group_by(interval, day) %>% summarise(steps = mean(steps, na.rm = TRUE))
+
+
+ggplot(imputedstepsperinterval, aes(x= interval, y=steps)) + geom_line() +
+  facet_grid(day~.)
+
+```
+
+We can see during weekdays our subject starts early and rushes to work in the morning and is only modaretely active in the evening threafter whereas in the weekends, sleeps slightly more and is fairly active throughout the day.

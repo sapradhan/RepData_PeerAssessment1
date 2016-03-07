@@ -1,47 +1,105 @@
----
-title: "Reproducible Research: Peer Assessment 1"
-output: 
-  html_document:
-    keep_md: true
----
+# Reproducible Research: Peer Assessment 1
 
 
 ## Loading and preprocessing the data
-```{r Load data, echo=TRUE}
+
+```r
 unzip("activity.zip")
 activity <- read.csv("activity.csv", stringsAsFactors = FALSE)
 activity$date <- as.Date(activity$date)
 head(activity)
 ```
 
+```
+##   steps       date interval
+## 1    NA 2012-10-01        0
+## 2    NA 2012-10-01        5
+## 3    NA 2012-10-01       10
+## 4    NA 2012-10-01       15
+## 5    NA 2012-10-01       20
+## 6    NA 2012-10-01       25
+```
+
 ## What is mean total number of steps taken per day?
-```{r mean steps per day, echo=TRUE}
+
+```r
 library(dplyr)
+```
+
+```
+## Warning: package 'dplyr' was built under R version 3.2.3
+```
+
+```
+## 
+## Attaching package: 'dplyr'
+```
+
+```
+## The following objects are masked from 'package:stats':
+## 
+##     filter, lag
+```
+
+```
+## The following objects are masked from 'package:base':
+## 
+##     intersect, setdiff, setequal, union
+```
+
+```r
 stepsperday <- activity %>% group_by(date) %>% summarize(steps=sum(steps,na.rm = TRUE))
 head(stepsperday)
+```
+
+```
+## Source: local data frame [6 x 2]
+## 
+##         date steps
+##       (date) (int)
+## 1 2012-10-01     0
+## 2 2012-10-02   126
+## 3 2012-10-03 11352
+## 4 2012-10-04 12116
+## 5 2012-10-05 13294
+## 6 2012-10-06 15420
+```
+
+```r
 hist(stepsperday$steps, main = "Histogram of total steps per day", xlab = 'Steps/day')
 ```
 
-The mean total steps is `r format(mean(stepsperday$steps), big.mark = ',')` and median total steps is `r format(median(stepsperday$steps), big.mark = ',')`
+![](PA1_template_files/figure-html/mean steps per day-1.png)
+
+The mean total steps is 9,354.23 and median total steps is 10,395
 
 
 ## What is the average daily activity pattern?
-```{r daily activity pattern}
-library(ggplot2)
 
+```r
+library(ggplot2)
+```
+
+```
+## Warning: package 'ggplot2' was built under R version 3.2.3
+```
+
+```r
 stepsperinterval <- activity %>% group_by(interval) %>% summarise(steps = mean(steps, na.rm = TRUE))
 
 mostActiveInterval = stepsperinterval[which.max(stepsperinterval$steps), ]$interval
 
 ggplot(stepsperinterval, aes(x= interval, y=steps)) + geom_line() + theme_classic()
-
 ```
 
-On average `r paste(mostActiveInterval%/%100, mostActiveInterval%%100, '-', mostActiveInterval%/%100, (mostActiveInterval%%100) +5 )`  has most number of steps during the study period
+![](PA1_template_files/figure-html/daily activity pattern-1.png)
+
+On average 8 35 - 8 40  has most number of steps during the study period
 
 ## Imputing missing values
 We will impute missing values with average number of steps during that interval rounded off to nearest integer.
-```{r imupting values}
+
+```r
 avgStepsInInterval <- function (interval, stepsperinterval) {
   round(stepsperinterval[stepsperinterval$interval == interval,]$steps)
 }
@@ -50,9 +108,10 @@ imputedactivity <- activity %>% mutate(steps = ifelse(is.na(steps), avgStepsInIn
 
 imputedstepsperday <- imputedactivity %>% group_by(date) %>% summarize(steps=sum(steps,na.rm = TRUE))
 hist(imputedstepsperday$steps, main = "Histogram of total steps per day after imputing", xlab = 'Steps/day')
-
 ```
 
-The mean total steps now is `r format(mean(imputedstepsperday$steps), big.mark = ',')` and median total steps is `r format(median(imputedstepsperday$steps), big.mark = ',')`. The histograms look similar and the means, medians and total steps have slightly increased. 
+![](PA1_template_files/figure-html/imupting values-1.png)
+
+The mean total steps is 9,530.656 and median total steps is 10,439
 
 ## Are there differences in activity patterns between weekdays and weekends?
